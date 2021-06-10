@@ -1,15 +1,11 @@
 import random
 
-
 minutes = 300
 self_reports_count = 15
 S_threshold = 0.5
 Zs = [random.randint(0, 1) for i in range(minutes)]
 Rs = {i * 20 - random.randint(0, 5): random.randint(0, 1) for i in range(1, self_reports_count + 1)}
-Pr_Z = {
-    0: len([Z for Z in Zs if Z == 0]) / len(Zs),
-    1: len([Z for Z in Zs if Z == 1]) / len(Zs)
-}
+Pr_Z = {x: len([Z for Z in Zs if Z == x]) / len(Zs) for x in [0, 1]}
 
 # assumption 1 : all matching R&Z are exceptions
 best_alpha = None
@@ -18,12 +14,12 @@ grid_step_size = 1
 comb_f1_scores = []
 for alpha in [x / 10 for x in range(0, 11, grid_step_size)]:
     for beta in [x / 10 for x in range(0, 11, grid_step_size)]:
-        Ss = {i+1: Rs[i] for i in Rs if Rs[i] == Zs[i]}
+        Ss = {i + 1: Rs[i] for i in Rs if Rs[i] == Zs[i]}
         tps, fps, fns = 0, 0, 0
 
         # compute perceived stress
         for i in range(1, minutes):
-            if i not in Ss and i-1 in Ss:
+            if i not in Ss and i - 1 in Ss:
                 if Ss[i - 1] == Zs[i - 1]:
                     # i-1 : S=0, Z=0 or S=1, Z=1
                     Ss[i] = Ss[i - 1]  # 0/1  i.e. exception cases
@@ -47,7 +43,6 @@ for alpha in [x / 10 for x in range(0, 11, grid_step_size)]:
         f1_denom = tps + 1 / 2 * (fps + fns)
         f1_score = str(tps / f1_denom) if f1_denom != 0 else '-'
         comb_f1_scores += [(alpha, beta, f1_score, Ss)]
-
 
 # assumption 2 : only first R&Z is an exception
 # todo fill
